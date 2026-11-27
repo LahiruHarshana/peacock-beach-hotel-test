@@ -1,0 +1,15 @@
+export const COLLECTIONS = {
+  users: "users",
+  rooms: "rooms",
+  events: "events",
+  reviews: "reviews",
+  siteSettings: "site_settings",
+  mediaAssets: "media_assets",
+  auditLogs: "audit_logs",
+  rateLimits: "rate_limits",
+  diningConfig: "dining_config",
+  diningTables: "dining_tables",
+  tableReservations: "table_reservations",
+  menuItems: "menu_items",
+  diningOrders: "dining_orders",
+} as const;

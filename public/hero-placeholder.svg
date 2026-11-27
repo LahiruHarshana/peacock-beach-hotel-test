@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Placeholder hero  CONTENT REQUIRED property photography">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#187C83"/>
+      <stop offset="100%" stop-color="#102F3A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g)"/>
+  <text x="800" y="450" fill="#FAF8F4" font-family="Georgia, serif" font-size="42" text-anchor="middle">CONTENT REQUIRED  hero photography</text>
+</svg>
