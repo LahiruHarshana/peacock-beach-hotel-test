@@ -43,7 +43,21 @@
   position: absolute;
   inset: 0;
   z-index: 2;
-  will-change: mask;
+  will-change: mask, transform, opacity;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgb(8 43 45 / 0.44) 0%, transparent 32%, transparent 62%, rgb(8 43 45 / 0.52) 100%);
+}
+
+.scrimLight {
+  background:
+    linear-gradient(180deg, rgb(247 238 226 / 0.72) 0%, rgb(247 238 226 / 0.18) 28%, transparent 56%, rgb(247 238 226 / 0.76) 100%);
 }
 
 .maskSvg {

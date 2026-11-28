@@ -6,17 +6,14 @@ import { HeroCursor } from "./HeroCursor";
 import { HeroIntroContent, type HeroColumn } from "./HeroIntroContent";
 import { HeroMedia } from "./HeroMedia";
 import {
-  type HeroMaskProfile,
+  HERO_INTRO,
   HERO_MASK_DESKTOP,
   HERO_MASK_MOBILE,
-  HERO_SCROLL,
-  HERO_TIMELINE,
 } from "./hero-motion.config";
 import styles from "./typography-mask-hero.module.css";
 import { useTypographyReveal } from "./useTypographyReveal";
 import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
-import { prefersReducedMotion } from "@/lib/motion/gsap-runtime";
-import { whenScrollReady } from "@/lib/motion/lenis-scroll";
+import { loadGsap, prefersReducedMotion } from "@/lib/motion/gsap-runtime";
 import type { HomeHeroTheme } from "@/lib/content/home-hero";
 
 function subscribeReducedMotion(onStoreChange: () => void) {
@@ -65,28 +62,26 @@ export function TypographyMaskHero({
   const maskGroupRef = useRef<SVGGElement>(null);
   const textRef = useRef<SVGTextElement>(null);
   const mediaRef = useRef<HTMLDivElement>(null);
+  const scrimRef = useRef<HTMLDivElement>(null);
   const chromeRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const gridVerticalRef = useRef<HTMLDivElement>(null);
+  const hasPlayedRef = useRef(false);
   const maskId = useHeroMaskId();
   const reduced = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false);
   const { layout, layoutReady } = useTypographyReveal(pinRef, textRef);
 
   useLayoutEffect(() => {
-    if (reduced) return;
     const section = root.current;
-    const pin = pinRef.current;
     const text = textRef.current;
     const media = mediaRef.current;
+    const scrim = scrimRef.current;
     const chrome = chromeRef.current;
     const footer = footerRef.current;
-    if (!section || !pin || !text || !media || !chrome || !footer || !layoutReady || !layout) {
+    if (!section || !text || !media || !scrim || !chrome || !footer) {
       return;
     }
-
-    let revert = () => {};
-    let cancelled = false;
 
     const setInteractive = (on: boolean) => {
       chrome.toggleAttribute("inert", !on);
@@ -99,101 +94,134 @@ export function TypographyMaskHero({
       media.classList.toggle(styles.mediaFull, full);
     };
 
+    // Reduced motion or already played (e.g. viewport resize): keep final stable state.
+    if (reduced || hasPlayedRef.current) {
+      setMediaFull(true);
+      setInteractive(true);
+      media.style.opacity = "1";
+      media.style.transform = "none";
+      scrim.style.opacity = "1";
+      chrome.style.opacity = "1";
+      chrome.style.transform = "none";
+      footer.style.opacity = "1";
+      footer.style.transform = "none";
+      return;
+    }
+
+    if (!layoutReady || !layout) {
+      return;
+    }
+
+    let revert = () => {};
+    let cancelled = false;
+
     void (async () => {
       try {
-        const { gsap } = await whenScrollReady();
+        const { gsap } = await loadGsap();
         if (cancelled) return;
 
-        const scroller = document.documentElement;
+        const isMobile = layout.width < 768;
+        const profile = isMobile ? HERO_MASK_MOBILE : HERO_MASK_DESKTOP;
+        const endFontSize = Math.round(layout.fontSize * profile.scaleEnd);
 
         const context = gsap.context(() => {
-          const wire = (end: string, profile: HeroMaskProfile) => {
-            const endFontSize = Math.round(layout.fontSize * profile.scaleEnd);
+          gsap.set(text, {
+            attr: { "font-size": layout.fontSize, x: layout.cx, y: layout.cy },
+            clearProps: "transform",
+          });
+          gsap.set(media, {
+            opacity: 0,
+            scale: HERO_INTRO.mediaScaleFrom,
+            transformOrigin: "50% 50%",
+          });
+          gsap.set(scrim, { opacity: 0 });
+          gsap.set(chrome, { opacity: 0, y: -12 });
+          gsap.set(footer, { opacity: 0, y: 14 });
+          setMediaFull(false);
+          setInteractive(false);
 
-            gsap.set(text, {
-              attr: { "font-size": layout.fontSize, x: layout.cx, y: layout.cy },
-              clearProps: "transform",
-            });
-            setMediaFull(false);
+          const tl = gsap.timeline({
+            onComplete: () => {
+              hasPlayedRef.current = true;
+              setMediaFull(true);
+              setInteractive(true);
+            },
+          });
 
-            const tl = gsap.timeline({
-              scrollTrigger: {
-                trigger: section,
-                scroller,
-                start: "top top",
-                end,
-                scrub: HERO_SCROLL.scrub,
-                pin,
-                pinSpacing: true,
-                anticipatePin: HERO_SCROLL.anticipatePin,
-                invalidateOnRefresh: true,
-                onUpdate: (self) => {
-                  setInteractive(self.progress < HERO_TIMELINE.chromeFadeEnd);
-                  if (self.progress >= HERO_TIMELINE.unmaskStart) {
-                    setMediaFull(true);
-                  } else {
-                    setMediaFull(false);
-                  }
-                },
-              },
-            });
+          // 1. Fade in the masked "peacock" wordmark & gently settle the background image scale
+          tl.to(
+            media,
+            {
+              opacity: 1,
+              duration: HERO_INTRO.maskFadeDuration,
+              ease: "power2.out",
+            },
+            0,
+          ).to(
+            media,
+            {
+              scale: 1,
+              duration: HERO_INTRO.mediaScaleDuration,
+              ease: "power2.out",
+            },
+            0,
+          );
 
-            const { chromeFadeStart, chromeFadeEnd, maskExpandStart, maskExpandEnd, unmaskStart, unmaskEnd } =
-              HERO_TIMELINE;
+          // 2. Smoothly zoom the "peacock" wordmark once on load to reveal the full image
+          tl.to(
+            text,
+            {
+              attr: { "font-size": endFontSize },
+              duration: HERO_INTRO.zoomDuration,
+              ease: "expo.inOut",
+            },
+            HERO_INTRO.zoomDelay,
+          );
 
-            const chromeDur = chromeFadeEnd - chromeFadeStart;
+          // 3. Unmask cleanly once the zoomed letterforms fill the viewport and fade in scrim
+          tl.call(() => setMediaFull(true), undefined, HERO_INTRO.unmaskAt).to(
+            scrim,
+            {
+              opacity: 1,
+              duration: HERO_INTRO.chromeRevealDuration,
+              ease: "power2.out",
+            },
+            HERO_INTRO.chromeRevealAt,
+          );
 
-            tl.to(chrome, { opacity: 0, y: -18, ease: "none", duration: chromeDur }, chromeFadeStart).to(
-              footer,
-              { opacity: 0, y: 14, ease: "none", duration: chromeDur },
-              chromeFadeStart,
-            );
-
-            tl.to(
-              text,
-              {
-                attr: { "font-size": endFontSize },
-                ease: "none",
-                duration: maskExpandEnd - maskExpandStart,
-              },
-              maskExpandStart,
-            );
-
-            tl.to(
-              media,
-              {
-                opacity: 1,
-                ease: "none",
-                duration: unmaskEnd - unmaskStart,
-                onStart: () => setMediaFull(true),
-                onReverseComplete: () => setMediaFull(false),
-              },
-              unmaskStart,
-            );
-          };
-
-          const mediaQuery = gsap.matchMedia();
-          mediaQuery.add("(min-width: 768px)", () => wire(HERO_SCROLL.desktop, HERO_MASK_DESKTOP));
-          mediaQuery.add("(max-width: 767px)", () => wire(HERO_SCROLL.mobile, HERO_MASK_MOBILE));
+          // 4. Reveal hero chrome & CTAs and leave everything interactive and stable
+          tl.to(
+            chrome,
+            {
+              opacity: 1,
+              y: 0,
+              duration: HERO_INTRO.chromeRevealDuration,
+              ease: "power3.out",
+            },
+            HERO_INTRO.chromeRevealAt,
+          ).to(
+            footer,
+            {
+              opacity: 1,
+              y: 0,
+              duration: HERO_INTRO.chromeRevealDuration,
+              ease: "power3.out",
+              onStart: () => setInteractive(true),
+            },
+            HERO_INTRO.chromeRevealAt + 0.08,
+          );
         }, section);
 
         revert = () => context.revert();
-        const refresh = () => {
-          void whenScrollReady().then(({ ScrollTrigger }) => ScrollTrigger.refresh());
-        };
-        requestAnimationFrame(() => {
-          requestAnimationFrame(refresh);
-        });
       } catch {
-        /* scroll runtime unavailable */
+        setMediaFull(true);
+        setInteractive(true);
       }
     })();
 
     return () => {
       cancelled = true;
       revert();
-      setInteractive(true);
-      setMediaFull(false);
     };
   }, [layout, layoutReady, reduced]);
 
@@ -225,7 +253,14 @@ export function TypographyMaskHero({
           alt={alt}
           maskId={maskId}
           className={styles.mediaLayer}
-          style={{ opacity: layoutReady ? 1 : 0 }}
+          style={{ opacity: reduced ? 1 : 0 }}
+        />
+
+        <div
+          ref={scrimRef}
+          className={`${styles.scrim} ${theme === "light" ? styles.scrimLight : ""}`}
+          style={{ opacity: reduced ? 1 : 0 }}
+          aria-hidden="true"
         />
 
         <HeroArchitectureGrid ref={gridRef} verticalRef={gridVerticalRef} />
