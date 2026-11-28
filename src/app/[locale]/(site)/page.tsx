@@ -146,7 +146,7 @@ export default async function HomePage({ params }: LocalePageProps) {
       <HomeHeroThemeSync theme={homeHeroTheme} />
       <TypographyMaskHero
         theme={homeHeroTheme}
-        image={homePhoto("courtyard")}
+        image={homePhoto("hero")}
         alt={settings.brandName[lang]}
         pageTitle={t("title")}
         wordmark="peacock"

@@ -1,5 +1,6 @@
 /** Real hotel photographs in `public/images` and `public/new-img`. */
 export const HOME_PHOTOS = {
+  hero: "/images/DSC08330-Edit.webp",
   beach: "/images/ChatGPT Image Nov 27, 2026, 07_12_42 PM-2.webp",
   nightDining: "/images/ChatGPT Image Nov 27, 2026, 07_15_54 PM-1.webp",
   terrace: "/images/ChatGPT Image Nov 27, 2026, 07_12_40 PM-1.webp",
