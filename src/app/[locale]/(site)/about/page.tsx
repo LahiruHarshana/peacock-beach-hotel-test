@@ -79,7 +79,7 @@ export default async function AboutPage({ params }: LocalePageProps) {
           body={body}
           mainUrl={siteImage("thatchedLounge")}
           secondaryUrl={siteImage("loungeCoffee")}
-          detailUrl={girlPhoto("soakingTub")}
+          detailUrl={homePhoto("oceanShowerTub")}
           mainAlt={t("title")}
         />
         <AboutEditorialChapter
@@ -89,7 +89,7 @@ export default async function AboutPage({ params }: LocalePageProps) {
           title={home("roomsTitle")}
           body={home("trustBody")}
           href={`/${locale}/rooms`}
-          image={siteImage("oceanBedroom")}
+          image={homePhoto("oceanSuiteBedroom")}
           alt={home("roomsTitle")}
           tone="ivory"
         />

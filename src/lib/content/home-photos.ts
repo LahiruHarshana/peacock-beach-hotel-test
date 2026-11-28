@@ -1,6 +1,6 @@
 /** Real hotel photographs in `public/images` and `public/new-img`. */
 export const HOME_PHOTOS = {
-  hero: "/images/DSC08330-Edit.webp",
+  hero: "/p-images/DSC08350-HDR.webp",
   beach: "/images/ChatGPT Image Nov 27, 2026, 07_12_42 PM-2.webp",
   nightDining: "/images/ChatGPT Image Nov 27, 2026, 07_15_54 PM-1.webp",
   terrace: "/images/ChatGPT Image Nov 27, 2026, 07_12_40 PM-1.webp",
@@ -10,6 +10,10 @@ export const HOME_PHOTOS = {
   seaRoom: "/new-img/DSC08285-Edit.webp",
   courtyard: "/images/ChatGPT Image Nov 27, 2026, 07_16_01 PM-5.webp",
   coast: "/images/ChatGPT Image Nov 27, 2026, 07_15_59 PM-4.webp",
+  oceanSuiteBedroom: "/p-images/DSC08285-Edit-1.webp",
+  sunsetBalcony: "/p-images/DSC08320-HDR-Edit-2.webp",
+  oceanShowerTub: "/p-images/DSC08336-Edit.webp",
+  balconyTub: "/p-images/DSC08350-HDR.webp",
 } as const;
 
 export type HomePhotoSlot = keyof typeof HOME_PHOTOS;

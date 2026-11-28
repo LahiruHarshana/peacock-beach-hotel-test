@@ -82,7 +82,7 @@ export default async function HomePage({ params }: LocalePageProps) {
       index: "01",
       label: nav("rooms"),
       title: t("roomsTitle"),
-      image: siteImage("oceanBedroom"),
+      image: homePhoto("oceanSuiteBedroom"),
       alt: t("roomsTitle"),
       href: `/${locale}/rooms`,
       cta: common("viewAllRooms"),
@@ -165,7 +165,7 @@ export default async function HomePage({ params }: LocalePageProps) {
         <HomeStatementPin
           plateUrl={storyPlate}
           secondaryUrl={girlPhoto("balconyCurtain")}
-          detailUrl={siteImage("oceanTubBalcony")}
+          detailUrl={homePhoto("balconyTub")}
           plateAlt={settings.brandName[lang]}
           lineOne={`${t("sceneCoastLead")} ${t("sceneCoastEmphasis")}.`}
           lineTwo={`${t("sceneStayLead")} ${t("sceneStayEmphasis")}.`}

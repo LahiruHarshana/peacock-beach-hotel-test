@@ -93,7 +93,7 @@ export default async function RoomsPage({ params }: LocalePageProps) {
         eyebrow={t("filmEyebrow")}
         title={t("title")}
         intro={t("intro")}
-        image={homePhoto("seaRoom")}
+        image={homePhoto("sunsetBalcony")}
         alt={t("title")}
         scrollLabel={t("scrollLabel")}
       />
@@ -110,7 +110,7 @@ export default async function RoomsPage({ params }: LocalePageProps) {
         scene={`03 · ${enquiry("title").toUpperCase()}`}
         title={enquiry("title")}
         lede={enquiry("disclaimer")}
-        image={girlPhoto("soakingTub")}
+        image={homePhoto("oceanShowerTub")}
         alt={enquiry("title")}
       >
         <EnquiryModule locale={lang} />
